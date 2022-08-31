@@ -1,19 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Modal from './components/Modal';
+import axios from 'axios';
 import './App.css';
 
-const todoItems = [
-  {
-    id: 1,
-    title: "task 1",
-    description: "task 1",
-    completed: true,
-  },
-];
-
-function App(props) {
+function App() {
   const [viewCompleted, setViewCompleted] = useState(false);
-  const [todoList, setTodoList] = useState(todoItems);
+  const [todoList, setTodoList] = useState([]);
   const [modal, setModal] = useState(false);
   const [activeItem, setActiveItem] = useState({
     title: '',
@@ -21,17 +13,44 @@ function App(props) {
     completed: false,
   });
 
+  useEffect(() => {
+    refreshList();
+  });
+
+  const refreshList = async () => {
+    try {
+      const { data } = await axios.get('http://localhost:8000/api/todos/');
+      setTodoList(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const toggle = () => {
     setModal(!modal);
   };
 
-  const handleSubmit = (item) => {
-    toggle();
-    alert(`save ${JSON.stringify(item)}`);
+  const handleSubmit = async (item) => {
+    try {
+      toggle();
+      if (item.id) {
+        await axios.put(`http://localhost:8000/api/todos/${item.id}/`, item);
+        return refreshList();
+      }
+      await axios.post('http://localhost:8000/api/todos/', item);
+      return refreshList();
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const handleDelete = (item) => {
-    alert(`delete ${JSON.stringify(item)}`);
+  const handleDelete = async (item) => {
+    try {
+      await axios.delete(`http://localhost:8000/api/todos/${item.id}/`);
+      return refreshList();
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const createItem = () => {
@@ -69,7 +88,7 @@ function App(props) {
   };
 
   const renderItems = () => {
-    const newItems = todoList.filter(item => item.completed == viewCompleted);
+    const newItems = todoList.filter(item => item.completed === viewCompleted);
 
     return newItems.map(item => (
       <li
