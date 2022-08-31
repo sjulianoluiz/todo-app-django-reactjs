@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Modal from './components/Modal';
 import './App.css';
 
 const todoItems = [
@@ -10,9 +11,43 @@ const todoItems = [
   },
 ];
 
-function App() {
+function App(props) {
   const [viewCompleted, setViewCompleted] = useState(false);
   const [todoList, setTodoList] = useState(todoItems);
+  const [modal, setModal] = useState(false);
+  const [activeItem, setActiveItem] = useState({
+    title: '',
+    description: '',
+    completed: false,
+  });
+
+  const toggle = () => {
+    setModal(!modal);
+  };
+
+  const handleSubmit = (item) => {
+    toggle();
+    alert(`save ${JSON.stringify(item)}`);
+  };
+
+  const handleDelete = (item) => {
+    alert(`delete ${JSON.stringify(item)}`);
+  };
+
+  const createItem = () => {
+    const item = {
+      title: '',
+      description: '',
+      completed: false,
+    };
+    setActiveItem(item);
+    setModal(!modal);
+  };
+
+  const editItem = (item) => {
+    setActiveItem(item);
+    setModal(!modal);
+  };
 
   const renderTabList = () => {
     return (
@@ -48,10 +83,16 @@ function App() {
           {item.title}
         </span>
         <span>
-          <button className='btn btn-secondary mr-2'>
+          <button
+            className='btn btn-secondary mr-2'
+            onClick={() => editItem(item)}
+          >
             Edit
           </button>
-          <button className='btn btn-danger'>
+          <button
+            className='btn btn-danger'
+            onClick={() => handleDelete(item)}
+          >
             Delete
           </button>
         </span>
@@ -67,7 +108,10 @@ function App() {
           <div className='col-md-6 col-sm-10 mx-auto p-0'>
             <div className='card p-3'>
               <div className='mb-4'>
-                <button className='btn btn-primary'>
+                <button
+                  className='btn btn-primary'
+                  onClick={createItem}
+                >
                   Add task
                 </button>
               </div>
@@ -78,6 +122,13 @@ function App() {
             </div>
           </div>
         </div>
+        {modal ? (
+          <Modal
+            activeItem={activeItem}
+            toggle={toggle}
+            onSave={handleSubmit}
+          />
+        ) : null}
       </main>
     </div>
   );
